@@ -1,5 +1,10 @@
 var width = 1000;
 var height = 1000;
+var gridWidth = width / 10;
+var gridHeight = height / 10;
+
+var gridX = d3.scaleLinear().domain([0, gridWidth]).range([0, width]);
+var gridY = d3.scaleLinear().domain([0, gridHeight]).range([0, height]);
 
 var svg = d3.select("svg");
 
@@ -8,15 +13,15 @@ svg.style("height", height);
 
 var lineFunc = d3.line().x(function(d) {return d[0]; }).y(function(d) {return d[1]; })
 function drawGrid() {
-    for (var x = 0; x < width; x=x+10) {
+    for (var x = 0; x < gridWidth; x = x+1) {
         svg.append("path").attr("d",
-                lineFunc([[x, 0], [x, height]])).attr("stroke", "blue")
+                lineFunc([[gridX(x), 0], [gridX(x), height]])).attr("stroke", "blue")
         console.log(x)
 
     }
-    for (var y = 0; y < height; y=y+10) {
+    for (var y = 0; y < gridHeight; y = y+1) {
         svg.append("path").attr("d",
-                lineFunc([[0, y], [width, y]])).attr("stroke", "blue")
+                lineFunc([[0, gridY(y)], [width, gridY(y)]])).attr("stroke", "blue")
         console.log(x)
 
     }
@@ -54,17 +59,13 @@ function drawPoints(data) {
 
     circleEnter.merge(circle)
 
-    circle.exit().remove()
+    //circle.exit().remove()
 }
 
 
 var initX = d3.randomUniform(50, width - 50)();
 var initY = d3.randomUniform(20, height- 20)();
 
-var pData = [[initX, initY]]
-drawPoints(pData)
-var initX = d3.randomUniform(50, width - 50)();
-var initY = d3.randomUniform(20, height- 20)();
 var pData = [[initX, initY]]
 drawPoints(pData)
 
@@ -76,15 +77,17 @@ initRandArch = d3.randomUniform(0, Math.PI * 2)
 
 var lineFunction = d3.line().x(function(d) { return d[0]; } ).y(function(d) { return d[1]; } )
 
-//var arc = d3.arc().innerRadius(minDistance).outerRadius(minDistance * 2).startAngle(0).endAngle(2 * Math.PI)
+var arc = d3.arc().innerRadius(minDistance).outerRadius(minDistance * 2).startAngle(0).endAngle(2 * Math.PI)
 
-//var arcG = svg.append("g").attr("transform", "translate(" + initX + "," + initY + ")")
-//arcG.append("path").attr("class", "arc").attr("d", arc)
+var arcG = svg.append("g").attr("transform", "translate(" + initX + "," + initY + ")")
+arcG.append("path").attr("class", "arc").attr("d", arc)
 
-//var arcEnter = arc.enter().append("circle");
-//
-//
+//var arcEnter = arcG.enter().append("circle");
 var pData = [[initX, initY], [200, 200]]
 
-drawPoints(pData)
 
+var backgroundGrid = [];
+for (var i = 0; i < gridWidth; i = i + 1) {
+    backgroundGrid[i] = []
+}
+console.log(backgroundGrid)
