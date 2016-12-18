@@ -1,8 +1,9 @@
-var width = 700;
-var height = 1000;
-var minDistance = 10;
+var width = 500;
+var height = 500;
+var minDistance = 25;
 var gridWidth = width / (minDistance/Math.sqrt(2));
 var gridHeight = height / (minDistance/Math.sqrt(2));
+var dotSize = 3;
 
 // from actual xy to gridxy
 var gridX = d3.scaleLinear().domain([0, width]).range([0, gridWidth]);
@@ -58,27 +59,29 @@ function drawPoints(data) {
     circle.enter().append("circle")
         .attr("cx", function(d) { return d[0]; })
         .attr("cy", function(d) { return d[1]; })
-        .attr("r", function(d, i) { return 2; })
+        .attr("r", dotSize)
         .attr("style", function(d, i) {
             if (d[2] == 1) {
                 return "fill:red"
             }
             return "fill:green"
-    }).merge(circle)
+    }).merge(circle);
 }
 
 
 var initX = d3.randomUniform(50, width - 50)();
 var initY = d3.randomUniform(20, height- 20)();
+//var initX = 200;
+//var initY = 20;
 
-var pData = [[initX, initY, 1]]
-drawPoints(pData)
+var pData = [[initX, initY, 1]];
+drawPoints(pData);
 
 //var arc = svg.selectAll("circle").data([[initX, initY]])
 
 //
-initRandDist = d3.randomUniform(minDistance, minDistance * 2)()
-initRandArch = d3.randomUniform(0, Math.PI * 2)
+initRandDist = d3.randomUniform(minDistance, minDistance * 2)();
+initRandArch = d3.randomUniform(0, Math.PI * 2);
 
 var lineFunction = d3.line().x(function(d) { return d[0]; } ).y(function(d) { return d[1]; } )
 
@@ -138,54 +141,68 @@ arcG.append("path").attr("class", "arc").attr("stroke", "red").attr("fill", "non
 var arcEnter = arcG.enter().append("circle");
 
 function testCanidates(inXY, callback) {
-    function tryCanidate(iteration) {
+    for (var i = 0; i < k; i++) {
+        //console.log("Canidate ", i)
         var xy = RandomPoint(inXY);
 
-        validateCanidate(xy, (valid) => {
-            if (valid) {
-                callback(true, xy)
-                return
-            }
-            if (iteration > k) {
-                callback(false)
-                return
-            }
-            window.setTimeout(() => { tryCanidate(iteration + 1);}, 0)
-        });
-    };
-    tryCanidate(0)
+        if (validateCanidate(xy)) {
+            callback(true, xy)
+            return
+        }
+    }
+    callback(false)
 }
 
 
-function validateCanidate(xy, callback) {
+function validateCanidate(xy) {
     var gridXY = PointToGrid(xy);
+    if (backgroundGrid[gridXY[0]][gridXY[1]] > -1) {
+        //console.log( "Someone is home already");
+        //console.log("Bad canidate");
+        return false
+    }
     for (var x = -1; x < 2; x++ ){
         for(var y = -1; y < 2; y++){
-            px = gridXY[0] + x
-            py = gridXY[1] + y
-            if (px > 0 && py > 0 && px < gridWidth && py < gridHeight) {
+            var px = gridXY[0] + x;
+            var py = gridXY[1] + y;
+            //console.log("checking", px, py)
+            if (px > -1 && py > -1 && px < gridWidth && py < gridHeight) {
                 n = backgroundGrid[px][py];
                 if (n > -1) {
+                    //console.log("Neighbor found")
                     neigh = list[n];
                     diffX = Math.abs(neigh[0] - xy[0])
                     diffY = Math.abs(neigh[1] - xy[1])
                     dist = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2))
+                    //console.log("distance:", dist)
                     if (dist < minDistance) {
-                        callback(false)
-                        return
+                        //console.log("Bad canidate")
+                        return false
                     }
                 }
             }
         }
     }
+    //console.log("Good canidate")
+    //console.log("Canidate postion", xy)
+    //console.log()
+    //console.log("Anyone home?", backgroundGrid[gridXY[0]][gridXY[1]])
+    //console.log()
     backgroundGrid[gridXY[0]][gridXY[1]] = list.length
-    callback(true)
+    return true
 }
 
 function Next() {
+    if (activeList.length < 1) {
+        console.log("Active List Empty")
+        console.log("Done")
+        arcG.remove()
+        return
+    }
     var next = Math.floor(Math.random() * activeList.length);
     nextXY = list[activeList[next]];
-    //arcG.attr("transform", "translate(" + nextXY[0] + "," + nextXY[1] + ")");
+    arcG.attr("transform", "translate(" + nextXY[0] + "," + nextXY[1] + ")");
+    //console.log("Checking:", nextXY)
     testCanidates(nextXY, (valid, position) => {
             if (valid) {
                 svg.append("path")
@@ -195,12 +212,15 @@ function Next() {
                 activeList.push(list.length - 1)
                 pData.push(position)
             } else {
+                //console.log("Removing", list[activeList[next]])
                 activeList.splice(next - 1, 1);
+                //console.log("Total:", list.length, "Active:", activeList.length)
             }
-            window.setTimeout(Next, 10);
-            //drawPoints(pData)
+            drawPoints(pData)
+            window.setTimeout(Next, 2000 / list.length)
     });
 }
 
-
-Next()
+//for(var i = 0; i < 50000; i++) {
+    Next()
+//}
