@@ -1,10 +1,28 @@
-var width = 720;
-var height = 600;
+var width = 1000;
+var height = 1000;
 
 var svg = d3.select("svg");
 
 svg.style("width", width);
 svg.style("height", height);
+
+var lineFunc = d3.line().x(function(d) {return d[0]; }).y(function(d) {return d[1]; })
+function drawGrid() {
+    for (var x = 0; x < width; x=x+10) {
+        svg.append("path").attr("d",
+                lineFunc([[x, 0], [x, height]])).attr("stroke", "blue")
+        console.log(x)
+
+    }
+    for (var y = 0; y < height; y=y+10) {
+        svg.append("path").attr("d",
+                lineFunc([[0, y], [width, y]])).attr("stroke", "blue")
+        console.log(x)
+
+    }
+}
+drawGrid()
+
 
 //var circle = svg.selectAll("circle").data([32, 57, 112, 293]);
 
@@ -69,3 +87,4 @@ var lineFunction = d3.line().x(function(d) { return d[0]; } ).y(function(d) { re
 var pData = [[initX, initY], [200, 200]]
 
 drawPoints(pData)
+
