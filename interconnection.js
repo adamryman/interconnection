@@ -203,7 +203,7 @@ function Next() {
     nextXY = list[activeList[next]];
     arcG.attr("transform", "translate(" + nextXY[0] + "," + nextXY[1] + ")");
     //console.log("Checking:", nextXY)
-    testCanidates(nextXY, (valid, position) => {
+    testCanidates(nextXY, function(valid, position) {
             if (valid) {
                 svg.append("path")
                     .attr("d",lineFunc([[nextXY[0], nextXY[1]], [position[0], position[1]]]))
